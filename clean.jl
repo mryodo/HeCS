@@ -12,8 +12,7 @@ include("HOLaGraf_lsmr.jl")
 using .HOLaGraf_lsmr
 include("generateDelauney.jl")
 
-#= Plotting thingies: MOVE TO https://github.com/liuyxpp/MakiePublication.jl.git #TODO:
-
+#= Plotting thingies 
 using Plots, ColorSchemes, Plots.PlotMeasures,  LaTeXStrings
 pgfplotsx()
 theme(:mute)
@@ -117,11 +116,24 @@ end
     checkOrder(order, B2)
 
 For the matrix `B2` and the vector `order` checks for every 2 consequetive triangles in `order` if there and intersection.
+%TODO: REDO !!!
 """
-function checkOrder(order, edg2Trig)
+function checkOrder(order, edg2Trig, Δ)
       m = size( order, 1 );
-      flags = [ length( intersect( edg2Trig[order[i]], edg2Trig[order[i+1]] ) ) for i in 1 : m - 1 ];
-      return flags, sum( flags )
+
+      usedTrigs = Set(1 : Δ);
+      flags = falses( m - 1, 1 );
+      final = 0;
+      for i in 1 : m - 1
+            flags[ i ] = length(
+                  intersect( usedTrigs, edg2Trig[ order[ i ] ], edg2Trig[ order[ i + 1 ] ] )
+            ) > 0;
+            setdiff!( usedTrigs, edg2Trig[ order[ i ] ] );
+            if isempty(usedTrigs)
+                  final = i;
+            end
+      end
+      return flags, sum( flags ), final
 end
 
 """
@@ -129,16 +141,17 @@ end
 
       #TODO:
 """
-function randomOrderChecker(B2; maxTries = 5000)
-      m = size(B2, 1);
+function randomOrderChecker(edg2Trig, Δ; maxTries = 5000)
+      m = size(edg2Trig, 1);
       for repeat in 1 : maxTries
             order = shuffle(1:m);
-            flags, s = checkOrder(order, B2);
-            if ( s == 0 ) || ( ( s == 1 ) && ( flags[end] = 1 ) )
-                  return order
+            flags, s, final = checkOrder(order, edg2Trig, Δ);
+            if ( s == 0 ) || ( ( s == 1 ) && ( flags[final] ) )
+                  return repeat, order
             end
       end
 end
+
 
 """
     reodering( order, G, edg2Trig, trig2Edg )
@@ -225,40 +238,6 @@ end
 #            End of Functions of Graph Generation               #
 #################################################################
 
-n = 6;
-edges, trigs = generateComplete( n );
-w_Δ = rand( size(trigs, 1), 1 ) * 0.75 .+ 0.25;
-edges2, trigs2, w_Δ2 = massRemove( n, edges, trigs, w_Δ, n );
-
-edg2Trig = getEdges2Trig( edges2, trigs2 );
-trig2Edg = getTrig2Edg( edges2, trigs2, edg2Trig );
-
-w2 = ones(size(edges2, 1), 1);
-G = NiceGraph( n, edges2, trigs2, w2, w_Δ2 );
-
-trigSet = Set(1:size(trigs2, 1));
-edgeSet = Set(1:size(edges2, 1));
-
-order = [ ];
-previous = 0;
-while true
-      global trigSet, edgeSet, G, edges2, trigs2, edg2Trig, trig2Edg, order, previous
-
-      flag, newEdge, trigSet = orderingIteration( trigSet, edges2, edg2Trig, trig2Edg, previous);
-      
-      if !flag
-            break
-      end
-      order = [ order; newEdge ];
-      previous = newEdge;
-      delete!(edgeSet, previous);
-end
-
-if !isempty(edgeSet)
-      order = [ order; collect( edgeSet ) ];
-end
-
-checkOrder( order, edg2Trig )
 
 
 
@@ -275,10 +254,4 @@ checkOrder( order, edg2Trig )
 
 
 
-
-
-
-
-
-
-
+|

@@ -1,0 +1,112 @@
+% Recommended preamble:
+% \usetikzlibrary{arrows.meta}
+% \usetikzlibrary{backgrounds}
+% \usepgfplotslibrary{patchplots}
+% \usepgfplotslibrary{fillbetween}
+% \pgfplotsset{%
+%     layers/standard/.define layer set={%
+%         background,axis background,axis grid,axis ticks,axis lines,axis tick labels,pre main,main,axis descriptions,axis foreground%
+%     }{
+%         grid style={/pgfplots/on layer=axis grid},%
+%         tick style={/pgfplots/on layer=axis ticks},%
+%         axis line style={/pgfplots/on layer=axis lines},%
+%         label style={/pgfplots/on layer=axis descriptions},%
+%         legend style={/pgfplots/on layer=axis descriptions},%
+%         title style={/pgfplots/on layer=axis descriptions},%
+%         colorbar style={/pgfplots/on layer=axis descriptions},%
+%         ticklabel style={/pgfplots/on layer=axis tick labels},%
+%         axis background@ style={/pgfplots/on layer=axis background},%
+%         3d box foreground style={/pgfplots/on layer=axis foreground},%
+%     },
+% }
+
+\begin{tikzpicture}[/tikz/background rectangle/.style={fill={rgb,1:red,1.0;green,1.0;blue,1.0}, draw opacity={1.0}}, show background rectangle]
+\begin{axis}[point meta max={nan}, point meta min={nan}, legend cell align={left}, legend columns={1}, title={$\textrm{Ordering \; time \; vs. }n$}, title style={at={{(0.5,1)}}, anchor={south}, font={{\fontsize{18 pt}{23.400000000000002 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}, align={center}}, legend style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={1}, solid, fill={rgb,1:red,1.0;green,1.0;blue,1.0}, fill opacity={0.9}, text opacity={1.0}, font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, text={rgb,1:red,0.0;green,0.0;blue,0.0}, cells={anchor={center}}, at={(0.02, 0.98)}, anchor={north west}}, axis background/.style={fill={rgb,1:red,1.0;green,1.0;blue,1.0}, opacity={1.0}}, anchor={north west}, xshift={1.0mm}, yshift={-1.0mm}, width={125.0mm}, height={99.6mm}, scaled x ticks={false}, xlabel={$| \mathcal V_0 ( \mathcal K ) |$}, x tick style={draw={none}}, x tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, xlabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, at={{(ticklabel cs:0.5)}}, anchor={near ticklabel}, font={{\fontsize{14 pt}{18.2 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, xmode={log}, log basis x={10}, xmajorgrids={true}, xmin={6.583838488265785}, xmax={57.41331605775268}, xticklabels={{$7$,$10$,$15$,$20$,$30$,$40$,$50$}}, xtick={{7,10,15,20,30,40,50}}, xtick align={inside}, xticklabel style={font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, x grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={0.5}, solid}, extra x ticks={{}}, extra x tick labels={}, extra x tick style={grid={major}, x grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.05}, line width={0.5}, solid}, major tick length={0}}, x axis line style={{draw opacity = 0}}, scaled y ticks={false}, ylabel={$\textrm{exec \; time}$}, y tick style={draw={none}}, y tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, ylabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, at={{(ticklabel cs:0.5)}}, anchor={near ticklabel}, font={{\fontsize{14 pt}{18.2 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, ymode={log}, log basis y={10}, ymajorgrids={true}, ymin={1.1629019705754211e-5}, ymax={0.04682052467116679}, yticklabels={{$0.0001$,$0.0010$,$0.0100$}}, ytick={{0.0001,0.001,0.01}}, ytick align={inside}, yticklabel style={font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, y grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={0.5}, solid}, extra y ticks={{2.0e-5,3.0e-5,4.0e-5,5.0e-5,6.0e-5,7.0e-5,8.0e-5,9.0e-5,0.00019999999999999998,0.0003,0.00039999999999999996,0.0005,0.0006,0.0007,0.0007999999999999999,0.0008999999999999999,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.020000000000000004,0.030000000000000006,0.04000000000000001}}, extra y tick labels={}, extra y tick style={grid={major}, y grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.05}, line width={0.5}, solid}, major tick length={0.1cm}}, y axis line style={{draw opacity = 0}}, colorbar={false}]
+    \addplot[color={rgb,1:red,0.4;green,0.761;blue,0.647}, name path={d38fc723-7b15-4792-aaae-09c505031e94}, draw opacity={1.0}, line width={4}, dotted, mark={diamond*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.4;green,0.761;blue,0.647}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            7.0  1.47085e-5  \\
+            10.0  4.63335e-5  \\
+            15.0  0.000145208  \\
+            20.0  0.000491896  \\
+            30.0  0.007189333  \\
+            40.0  0.012769688000000001  \\
+            50.0  0.0370178335  \\
+        }
+        ;
+    \addlegendentry {$C_n - n \textrm{ \; random edges}, \gamma = 4.12 $}
+    \addplot[color={rgb,1:red,0.62;green,0.004;blue,0.259}, name path={cbc4a3b0-aad1-454e-a15f-5abba28c3ae7}, draw opacity={1.0}, line width={4}, dotted, mark={*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.62;green,0.004;blue,0.259}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            7.0  1.80625e-5  \\
+            10.0  5.60625e-5  \\
+            15.0  0.0002262295  \\
+            20.0  0.0006243749999999999  \\
+            30.0  0.006504229  \\
+            40.0  0.012967145999999999  \\
+            50.0  0.034401292  \\
+        }
+        ;
+    \addlegendentry {$C_n  \textrm{ \; random edges}, \gamma = 3.94$}
+    \addplot[color={rgb,1:red,0.992;green,0.682;blue,0.38}, name path={68e569fb-01d9-4548-bf3b-c2374180fc49}, draw opacity={1.0}, line width={4}, dotted, mark={square*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.992;green,0.682;blue,0.38}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            11.0  2.2521e-5  \\
+            14.0  2.84165e-5  \\
+            19.0  3.96875e-5  \\
+            24.0  5.00415e-5  \\
+            34.0  7.80205e-5  \\
+            44.0  9.993750000000001e-5  \\
+            54.0  0.00014939549999999998  \\
+        }
+        ;
+    \addlegendentry {$\textrm{ triangulation}, \gamma = 0.94$}
+\end{axis}
+\begin{axis}[point meta max={nan}, point meta min={nan}, legend cell align={left}, legend columns={1}, title={$\textrm{Ordering \; time \; vs. triangles}$}, title style={at={{(0.5,1)}}, anchor={south}, font={{\fontsize{18 pt}{23.400000000000002 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}, align={center}}, legend style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={1}, solid, fill={rgb,1:red,1.0;green,1.0;blue,1.0}, fill opacity={0.9}, text opacity={1.0}, font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, text={rgb,1:red,0.0;green,0.0;blue,0.0}, cells={anchor={center}}, at={(0.02, 0.98)}, anchor={north west}}, axis background/.style={fill={rgb,1:red,1.0;green,1.0;blue,1.0}, opacity={1.0}}, anchor={north west}, xshift={128.0mm}, yshift={-1.0mm}, width={125.0mm}, height={99.6mm}, scaled x ticks={false}, xlabel={$| \mathcal V_2 ( \mathcal K ) | \cdot \overline{\Delta}_e$}, x tick style={draw={none}}, x tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, xlabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, at={{(ticklabel cs:0.5)}}, anchor={near ticklabel}, font={{\fontsize{14 pt}{18.2 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, xmode={log}, log basis x={10}, xmajorgrids={true}, xmin={15.549559709276132}, xmax={1.296499732270457e6}, xticklabels={{$1.0\times10^{2}$,$1.0\times10^{3}$,$1.0\times10^{4}$,$1.0\times10^{5}$,$1.0\times10^{6}$}}, xtick={{100.0,1000.0,10000.0,100000.0,1.0e6}}, xtick align={inside}, xticklabel style={font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, x grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={0.5}, solid}, extra x ticks={{20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,200.0,300.0,400.0,500.0,600.0,700.0,800.0,900.0,2000.0,3000.0,4000.0,5000.0,6000.0,7000.0,8000.0,9000.0,20000.0,30000.0,40000.0,50000.0,60000.0,70000.0,80000.0,90000.0,200000.0,300000.0,400000.0,500000.0,600000.0,700000.0,800000.0,900000.0}}, extra x tick labels={}, extra x tick style={grid={major}, x grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.05}, line width={0.5}, solid}, major tick length={0.1cm}}, x axis line style={{draw opacity = 0}}, scaled y ticks={false}, ylabel={}, y tick style={draw={none}}, y tick label style={color={rgb,1:red,0.0;green,0.0;blue,0.0}, opacity={1.0}, rotate={0}}, ylabel style={at={(ticklabel cs:0.5)}, anchor=near ticklabel, at={{(ticklabel cs:0.5)}}, anchor={near ticklabel}, font={{\fontsize{14 pt}{18.2 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, ymode={log}, log basis y={10}, ymajorgrids={true}, ymin={1.1629019705754211e-5}, ymax={0.04682052467116679}, yticklabels={{$0.0001$,$0.0010$,$0.0100$}}, ytick={{0.0001,0.001,0.01}}, ytick align={inside}, yticklabel style={font={{\fontsize{10 pt}{13.0 pt}\selectfont}}, color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={1.0}, rotate={0.0}}, y grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.1}, line width={0.5}, solid}, extra y ticks={{2.0e-5,3.0e-5,4.0e-5,5.0e-5,6.0e-5,7.0e-5,8.0e-5,9.0e-5,0.00019999999999999998,0.0003,0.00039999999999999996,0.0005,0.0006,0.0007,0.0007999999999999999,0.0008999999999999999,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.020000000000000004,0.030000000000000006,0.04000000000000001}}, extra y tick labels={}, extra y tick style={grid={major}, y grid style={color={rgb,1:red,0.1333;green,0.1333;blue,0.3333}, draw opacity={0.05}, line width={0.5}, solid}, major tick length={0.1cm}}, y axis line style={{draw opacity = 0}}, colorbar={false}]
+    \addplot[color={rgb,1:red,0.4;green,0.761;blue,0.647}, name path={e18a5285-24fb-4d26-a4f8-5de90326adfe}, draw opacity={1.0}, line width={4}, dotted, mark={diamond*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.4;green,0.761;blue,0.647}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            21.428571428571427  1.47085e-5  \\
+            278.4857142857143  4.63335e-5  \\
+            2736.0750000000003  0.000145208  \\
+            11692.870588235295  0.000491896  \\
+            79497.59999999999  0.007189333  \\
+            288100.945945946  0.012769688000000001  \\
+            763747.2006382978  0.0370178335  \\
+        }
+        ;
+    \addlegendentry {$C_n - n \textrm{ \; random edges}, \gamma = 0.78 $}
+    \addplot[color={rgb,1:red,0.62;green,0.004;blue,0.259}, name path={41552abe-e183-4929-ac1d-ca91d6d5b927}, draw opacity={1.0}, line width={4}, dotted, mark={*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.62;green,0.004;blue,0.259}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            175.0  1.80625e-5  \\
+            960.0  5.60625e-5  \\
+            5915.0  0.0002262295  \\
+            20520.0  0.0006243749999999999  \\
+            113680.0  0.006504229  \\
+            375440.0  0.012967145999999999  \\
+            940800.0  0.034401292  \\
+        }
+        ;
+    \addlegendentry {$C_n  \textrm{ \; random edges}, \gamma = 0.9 $}
+    \addplot[color={rgb,1:red,0.992;green,0.682;blue,0.38}, name path={a163b7f6-eb38-424e-a4c9-2da870ff7d0d}, draw opacity={1.0}, line width={4}, dotted, mark={square*}, mark size={4.5 pt}, mark repeat={1}, mark options={color={rgb,1:red,0.0;green,0.0;blue,0.0}, draw opacity={0.8}, fill={rgb,1:red,0.992;green,0.682;blue,0.38}, fill opacity={0.8}, line width={0.75}, rotate={0}, solid}]
+        table[row sep={\\}]
+        {
+            \\
+            29.53846153846154  2.2521e-5  \\
+            41.48571428571429  2.84165e-5  \\
+            61.44  3.96875e-5  \\
+            81.41538461538461  5.00415e-5  \\
+            121.38947368421053  7.80205e-5  \\
+            161.376  9.993750000000001e-5  \\
+            201.36774193548388  0.00014939549999999998  \\
+        }
+        ;
+    \addlegendentry {$\textrm{ triangulation}, \gamma = 0.96 $}
+\end{axis}
+\end{tikzpicture}
