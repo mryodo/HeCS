@@ -306,13 +306,14 @@ end
 #################################################################
 
 
-N = 20;
-G, edg2Trig, trig2Edg = generateComplConGraph( N, N );
+N = 10;
+G, edg2Trig, trig2Edg = generateComplConGraph( N, 0 );
 m = size( G.edges, 1 );
 Δ = size( G.trigs, 1 );
 
 check, order, times, flags = getTimedGraphOrdering( G, edg2Trig, trig2Edg );
 G, edg2Trig, trig2Edg = reodering( order, G, edg2Trig );
+check
 
 L1up = getL1up(G);
 
@@ -321,6 +322,18 @@ L1up = getL1up(G);
 
 Si = L1up;
 usedTrig = Set( 1 : Δ );
+Si_log = zeros( m, m, m );
+C = zeros( m , m) ;
+for i in 1 : m 
+      if abs(Si[ i , i ]) < 1e-8 
+            break
+      end
+      C[:, i ] = 1 / sqrt(Si[ i , i ]) * Si[ : , i ];
+      Si = Si - 1 / Si[ i , i ] * Si[ : , i ] * Si[ :, i]';
+      Si_log[ :, :, i] = Si;    
+end
+sum( abs.(L1up - C * C') .> 1e-8 ) 
+
 
 for i in 1 : m-1
       global Si, usedTrig, σ_i, G, edg2Trig
@@ -358,7 +371,8 @@ for i in 1 : m-1
       Si = A + K ;
       Ci = 1 / sqrt( Si[i , i] ) * Si[ :, i];
 
-      print(norm(Si-exactSi))
+      #@printf "error: %f \n" norm(Si-exactSi);
+      #@printf " c error: %f %f \n\n" norm(exactCi - Ci) norm(starCi-Ci)
 
 end
 

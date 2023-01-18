@@ -44,7 +44,7 @@ module HOLaGraf_lsmr
                 #weightedB2 = abs.(G.B2)'*W1;
                 #weightedB2[ weightedB2 .== 0 ] .= sum(W1);
                 #return Diagonal( vec( minimum(weightedB2; dims=2) ) )
-                return Diagonal( vec( G.w_Δ ) )
+                return Diagonal( vec( sqrt.( G.w_Δ ) ) )
         end
 
         ### get L0
