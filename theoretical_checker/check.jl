@@ -306,7 +306,34 @@ end
 #################################################################
 
 
-N = 10;
+"""
+    getStar( trigList, G )
+
+TBW
+"""
+function getStar( trigList, G )
+      m = size( G.edges, 1 );
+      A = zeros( m, m );
+      for t in trigList
+            A = A + G.w_Δ[t] * G.B2[ : , t] * G.B2[ : , t]';
+      end
+      return A
+end
+
+function getCyclic( trigList, G )
+      m = size( G.edges, 1 );
+      K = zeros( m, m );
+      Ω = sum( [ G.w_Δ[t] for t in trigList ] )
+      for t1 in trigList
+            for t2 in trigList
+                  K = K + G.w_Δ[t1] * G.w_Δ[t2] * ( G.B2[:, t1] - G.B2[:, t2]) * ( G.B2[:, t1] - G.B2[:, t2])'; 
+            end
+      end
+      return 1 / (2 * Ω) * K
+end
+
+
+N = 5;
 G, edg2Trig, trig2Edg = generateComplConGraph( N, 0 );
 m = size( G.edges, 1 );
 Δ = size( G.trigs, 1 );
@@ -317,6 +344,51 @@ check
 
 L1up = getL1up(G);
 
+usedTrigs = Set( 1:Δ )
+S0 = getStar( usedTrigs, G )
+
+usedTrigs1 = setdiff( usedTrigs, edg2Trig[1] )
+S1 = getStar( usedTrigs1, G )
+K1 = getCyclic( edg2Trig[1], G)
+
+usedTrigs2 = setdiff( usedTrigs1, edg2Trig[2] )
+S2 = getStar( usedTrigs2, G )
+K2 = getCyclic( setdiff(edg2Trig[2], edg2Trig[1]), G)
+
+usedTrigs3 = setdiff( usedTrigs2, edg2Trig[3] )
+S3 = getStar( usedTrigs3, G )
+K3 = getCyclic( setdiff( setdiff(edg2Trig[3], edg2Trig[1]), edg2Trig[2] ) , G)
+
+usedTrigs4 = setdiff( usedTrigs3, edg2Trig[4] )
+S4 = getStar( usedTrigs4, G )
+K4 = getCyclic( setdiff( setdiff( setdiff(edg2Trig[4], edg2Trig[1]), edg2Trig[2] ), edg2Trig[3] ) , G)
+
+usedTrigs5 = setdiff( usedTrigs4, edg2Trig[5] )
+S5 = getStar( usedTrigs5, G )
+
+
+
+E0 = L1up
+
+i = 1
+E1 = E0 - 1 / E0[ i, i ] * E0[ :, i ] * E0[ :, i ]'
+
+i = 2
+E2 = E1 - 1 / E1[ i, i ] * E1[ :, i ] * E1[ :, i ]'
+
+i = 3
+E3 = E2 - 1 / E2[ i, i ] * E2[ :, i ] * E2[ :, i ]'
+
+i = 4
+E4 = E3 - 1 / E3[ i, i ] * E3[ :, i ] * E3[ :, i ]'
+
+i = 5
+E5 = E4 - 1 / E4[ i, i ] * E4[ :, i ] * E4[ :, i ]'
+
+
+
+
+
 # restrictive set
 σ_i = Set([]);
 
@@ -325,6 +397,7 @@ usedTrig = Set( 1 : Δ );
 Si_log = zeros( m, m, m );
 C = zeros( m , m) ;
 for i in 1 : m 
+      global Si
       if abs(Si[ i , i ]) < 1e-8 
             break
       end
@@ -333,6 +406,31 @@ for i in 1 : m
       Si_log[ :, :, i] = Si;    
 end
 sum( abs.(L1up - C * C') .> 1e-8 ) 
+
+
+
+C2 = zeros( m , m) ;
+σ_i = Set([]) ;
+usedTrig = Set( 1 : Δ ) ;
+for i in 1:m
+      global σ_i, usedTrig, G, edg2Trig, C2
+      (isempty(usedTrig)) && break;
+      local A = zeros( m, m );
+      for t in usedTrig
+            A = A + G.w_Δ[ t ] * G.B2[ : , t ] * G.B2[ : , t]';
+      end
+      C2[:, i ] = 1 / sqrt(A[ i , i ]) * A[ : , i ];
+      setdiff!( usedTrig, edg2Trig[ i ] ); 
+end
+sum( abs.(L1up - C2 * C2') .> 1e-8 ) 
+eigs( pinv(C2) * L1up * pinv(C2)')[1]
+
+
+usedTrig = Set( 1 : Δ ) ;
+A = zeros( m, m );
+for t in usedTrig
+      A = A + G.w_Δ[ t ] * G.B2[ : , t ] * G.B2[ : , t]';
+end
 
 
 for i in 1 : m-1
