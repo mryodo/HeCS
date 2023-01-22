@@ -78,8 +78,9 @@ end
 
       check if two edges intersect
 """
-function intersectEdges(edge1, edge2)
-      return length( intersect( Set(edge1), Set(edge2) ) ) > 0
+function intersectEdges(edge1, edge2, edg2Trig)
+      #return length( intersect( Set(edge1), Set(edge2) ) ) > 0 # OLD  VERSION: do not work
+      return length( intersect( edg2Trig[edge1], edg2Trig[edge2] ) ) > 0
 end
 
 """
@@ -96,8 +97,9 @@ function orderingIteration( trigSet, edges2, edg2Trig, trig2Edg, previous = 0 )
             i = 1;
             newEdge = 0;
             while i < 4
-                  newEdge = edgList[i]; 
-                  if ( previous == 0 ) || !intersectEdges( edges2[previous, :], edges2[newEdge, :] )
+                  newEdge = edgList[i];
+                  #TODO: FIX  THIS SHIT NOW
+                  if ( previous == 0 ) || !intersectEdges( previous, newEdge, edg2Trig)  #!intersectEdges( edges2[previous, :], edges2[newEdge, :] )
                         break
                   end
                   i = i + 1;
@@ -330,6 +332,11 @@ function getCyclic( trigList, G )
             end
       end
       return 1 / (2 * Ω) * K
+end
+
+function δ(i)
+      δ = zeros(m, 1); δ[i] = 1.0;
+      return δ
 end
 
 
