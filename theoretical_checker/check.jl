@@ -340,6 +340,12 @@ function δ(i)
 end
 
 
+function Schur(Si, i)
+      return Si - 1 / ( δ(i)' * Si * δ(i) )[1, 1] * Si * δ(i) * δ(i)' * Si 
+end
+
+
+
 N = 5;
 G, edg2Trig, trig2Edg = generateComplConGraph( N, 0 );
 m = size( G.edges, 1 );
@@ -349,7 +355,17 @@ check, order, times, flags = getTimedGraphOrdering( G, edg2Trig, trig2Edg );
 G, edg2Trig, trig2Edg = reodering( order, G, edg2Trig );
 check
 
+ε = 1e-8
+G.w_Δ[ 3 ] = ε; G.w_Δ[ 7 ] = ε;
+
+
+
 L1up = getL1up(G);
+
+vals = eigen(Matrix(L1up)).values
+
+
+
 
 usedTrigs = Set( 1:Δ )
 S0 = getStar( usedTrigs, G )
@@ -378,19 +394,19 @@ S5 = getStar( usedTrigs5, G )
 E0 = L1up
 
 i = 1
-E1 = E0 - 1 / E0[ i, i ] * E0[ :, i ] * E0[ :, i ]'
+E1 = Schur(E0, i)
 
 i = 2
-E2 = E1 - 1 / E1[ i, i ] * E1[ :, i ] * E1[ :, i ]'
+E2 = Schur(E1, i)
 
 i = 3
-E3 = E2 - 1 / E2[ i, i ] * E2[ :, i ] * E2[ :, i ]'
+E3 = Schur(E2, i)
 
 i = 4
-E4 = E3 - 1 / E3[ i, i ] * E3[ :, i ] * E3[ :, i ]'
+E4 = Schur(E3, i)
 
 i = 5
-E5 = E4 - 1 / E4[ i, i ] * E4[ :, i ] * E4[ :, i ]'
+E5 = Schur(E4, i)
 
 
 
