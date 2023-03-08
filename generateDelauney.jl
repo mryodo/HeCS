@@ -25,7 +25,7 @@ end
 
 getIndx2Kill(edgs::Matrix)=rand(1:size(edgs, 1)-4);
 
-function killEdge(indx, n, edges, trigs, w_Δ)
+function killEdge(indx, n, edges, trigs)
     out=edges[indx,:];
     edges2=edges[1:size(edges,1) .!= indx, : ];
     out_trigs=Vector{Integer}();
@@ -36,8 +36,8 @@ function killEdge(indx, n, edges, trigs, w_Δ)
         end
     end
     trigs2=trigs[setdiff(1:size(trigs, 1), out_trigs) ,:];
-    w_Δ2=w_Δ[setdiff(1:size(trigs, 1), out_trigs) ,:]; 
-    return edges2, trigs2, w_Δ2
+    #w_Δ2=w_Δ[setdiff(1:size(trigs, 1), out_trigs) ,:]; 
+    return edges2, trigs2
 end
 
 function getNewEdge(n, edges2)
