@@ -237,6 +237,175 @@ savefig("triang_prob.pdf")
 
 
 
+#                                                                      #
+
+dist( x, y ) = norm( x - y, 2 )
+
+function generateSensor( N = 10 , eps = 0.5)
+      points =  rand(N, 2)
+      edges = Array{Integer}(undef, 0, 2)
+      for i in 1 : N-1
+            for j in i+1 : N
+                  if dist( points[i, :], points[j, :] ) < eps
+                        edges = [edges; i j ]
+                  end
+            end
+      end
+      edges
+
+      trigs = Array{Integer}(undef, 0, 3)
+
+      for i in 1 : size( edges, 1 )-1
+            for j in i+1 : size( edges, 1 )
+                  if edges[ i, 1 ] == edges[ j, 1 ]
+                        if sum( all( edges .== sort([ edges[i, 2] edges[j, 2] ]; dims=2)  , dims = 2) ) > 0
+                              trigs = [ trigs; sort( [ edges[i, 1] edges[i, 2] edges[j, 2] ]; dims = 2 ) ]
+                        end
+                  end
+            end
+      end
+      return N, points, edges, trigs
+end
+
+N = 20
+eps = 0.5
+
+Random.seed!(1)
+n, points, edges, trigs = generateSensor(N, eps)
+flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
+
+
+
+
+
+N = 20
+ϵs = Array(0.1:0.005:0.45)
+rep = 500
+freq = zeros( size(ϵs, 1), 1 )
+
+for i in 1:size(ϵs, 1)
+      global ϵs, rep, N, freq
+      eps = ϵs[i]
+      for j in 1:rep
+            Random.seed!(j)
+            n, points, edges, trigs = generateSensor(N, eps)
+            if size(edges, 1) > 0
+                  flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
+                  !flag && ( freq[i] = freq[i] + 1 )
+            end
+      end
+
+end
+
+freq = freq / rep
+
+
+N = 10
+ϵs01 = Array(0.1:0.005:0.45)
+rep = 500
+freq01 = zeros( size(ϵs01, 1), 1 )
+
+for i in 1:size(ϵs01, 1)
+      global ϵs01, rep, N, freq01
+      eps = ϵs01[i]
+      for j in 1:rep
+            Random.seed!(j)
+            n, points, edges, trigs = generateSensor(N, eps)
+            if size(edges, 1) > 0
+                  flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
+                  !flag && ( freq01[i] = freq01[i] + 1 )
+            end
+      end
+
+end
+
+freq01 = freq01 / rep
+
+
+
+N = 15
+ϵs015 = Array(0.1:0.005:0.45)
+rep = 500
+freq015 = zeros( size(ϵs015, 1), 1 )
+
+for i in 1:size(ϵs015, 1)
+      global ϵs015, rep, N, freq015
+      eps = ϵs015[i]
+      for j in 1:rep
+            Random.seed!(j)
+            n, points, edges, trigs = generateSensor(N, eps)
+            if size(edges, 1) > 0
+                  flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
+                  !flag && ( freq015[i] = freq015[i] + 1 )
+            end
+      end
+end
+
+freq015 = freq015 / rep
+
+
+
+
+plot()
+plot!( ϵs, freq, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 20" )
+plot!( ϵs01, freq01, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 10" )
+plot!( ϵs015, freq015, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 15" )
+xlabel!(L"\mathrm{percolation, \;} \varepsilon")
+ylabel!(L"\mathrm{probability \; of \; 2-Core}")
+plot!(size=(600, 600), legend = :bottomright, legendfont = font(18) )
+
+savefig("percol_prob.tex")
+savefig("percol_prob.pdf")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+N = 20
+
+eps = 0.2
+
+edges = Array{Integer}(undef, 0, 2)
+for i in 1 : N-1
+      for j in i+1 : N
+            if dist( points[i, :], points[j, :] ) < eps
+                  edges = [edges; i j ]
+            end
+      end
+end
+edges
+
+trigs = Array{Integer}(undef, 0, 3)
+
+for i in 1 : size( edges, 1 )-1
+      for j in i+1 : size( edges, 1 )
+            if edges[ i, 1 ] == edges[ j, 1 ]
+                  if sum( all( edges .== sort([ edges[i, 2] edges[j, 2] ]; dims=2)  , dims = 2) ) > 0
+                        trigs = [ trigs; sort( [ edges[i, 1] edges[i, 2] edges[j, 2] ]; dims = 2 ) ]
+                  end
+            end
+      end
+end
+
+
+
+
+
+
+
+
+
 
 
 
