@@ -49,6 +49,13 @@ function getNewEdge(n, edges2)
     return new_edge
 end
 
+function getNewEdge2(n, edges2, allEdges)
+    new_edge = allEdges[ sample( 1:size(allEdges, 1), 1), :]
+    indx = findall(all(allEdges .== new_edge, dims=2))[1][1]
+    allEdges = allEdges[ 1:size(allEdges, 1) .!= indx, : ]
+    return new_edge, allEdges
+end
+
 function addEdge(new_edge, n, edges, trigs)
     edges2=[edges; new_edge];
     edges2=sort(edges2, dims = 2); 
