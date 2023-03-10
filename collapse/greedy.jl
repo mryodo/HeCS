@@ -224,11 +224,11 @@ plot!( νs015[vec(freq015.>0)]/ν_init015, freq015[vec(freq015.>0)], marker = :c
 #plot!( [ν_init015, ν_init015], [0, 1], color=:black )
 
 plot!([1, 1], [0.25, 1], color=:black, linestyle=:dash, label="")
-xticks!( [1, 1.1, 1.25], [L"\nu_\Delta", L"1.1\nu_\Delta", L"1.25\nu_\Delta"], tickfontsize=15 )
+xticks!( [1, 1.1, 1.25], [L"\nu_\Delta", L"1.1\nu_\Delta", L"1.25\nu_\Delta"], tickfontsize=18 )
 yticks!( [ 0.25, 0.5, 1], [L"0.25", L"0.5", L"1"])
-xlabel!(L"\mathrm{sparsity \; (wrt \; triangulation)}")
-ylabel!(L"\mathrm{probability \; of \; 2-Core}")
-plot!( size=( 600, 600 ), legend=:bottomright, legendfont=font(18) )
+xlabel!(L"\mathrm{sparsity \; (wrt \; triangulation)}", xguidefontsize = 22)
+ylabel!(L"\mathrm{probability \; of \; 2-Core}", yguidefontsize = 22)
+plot!( size=( 600, 600 ), legend=:bottomright, legendfont=font(22) )
 
 savefig("triang_prob.tex")
 savefig("triang_prob.pdf")
@@ -267,6 +267,20 @@ function generateSensor( N = 10 , eps = 0.5)
       return N, points, edges, trigs
 end
 
+using Distances
+function minimumSensorDistance( N = 10)
+      rep = 1000
+      res = 0 
+      for i in 1:rep
+            points = rand( N, 2 )
+            Mat = pairwise(euclidean, points, dims=1)
+            Mat[diagind(Mat)] .= 1 
+            res = res + minimum(Mat)
+      end
+      return res/rep
+end
+
+
 N = 20
 eps = 0.5
 
@@ -279,9 +293,11 @@ flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
 
 
 N = 20
-ϵs = Array(0.1:0.005:0.45)
+min_ϵ = minimumSensorDistance(N)
+ϵs = Array(min_ϵ:0.01:0.45)
 rep = 500
 freq = zeros( size(ϵs, 1), 1 )
+nus = zeros( size(ϵs, 1), 1 )
 
 for i in 1:size(ϵs, 1)
       global ϵs, rep, N, freq
@@ -289,6 +305,7 @@ for i in 1:size(ϵs, 1)
       for j in 1:rep
             Random.seed!(j)
             n, points, edges, trigs = generateSensor(N, eps)
+            nus[i] = nus[i] + size(edges, 1) / ( n * (n-1) / 2 )
             if size(edges, 1) > 0
                   flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
                   !flag && ( freq[i] = freq[i] + 1 )
@@ -297,13 +314,17 @@ for i in 1:size(ϵs, 1)
 
 end
 
+nus = nus / rep
 freq = freq / rep
 
 
 N = 10
-ϵs01 = Array(0.1:0.005:0.45)
+min_ϵ01 = minimumSensorDistance(N)
+ϵs01 = Array(min_ϵ01:0.01:0.45)
 rep = 500
 freq01 = zeros( size(ϵs01, 1), 1 )
+nus01 = zeros( size(ϵs01, 1), 1 )
+
 
 for i in 1:size(ϵs01, 1)
       global ϵs01, rep, N, freq01
@@ -311,6 +332,7 @@ for i in 1:size(ϵs01, 1)
       for j in 1:rep
             Random.seed!(j)
             n, points, edges, trigs = generateSensor(N, eps)
+            nus01[i] = nus01[i] + size(edges, 1) / ( n * (n-1) / 2 )
             if size(edges, 1) > 0
                   flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
                   !flag && ( freq01[i] = freq01[i] + 1 )
@@ -319,14 +341,18 @@ for i in 1:size(ϵs01, 1)
 
 end
 
+nus01 = nus01 / rep
 freq01 = freq01 / rep
 
 
 
 N = 15
-ϵs015 = Array(0.1:0.005:0.45)
+min_ϵ015 = minimumSensorDistance(N)
+ϵs015 = Array(min_ϵ015:0.01:0.45)
 rep = 500
 freq015 = zeros( size(ϵs015, 1), 1 )
+nus015 = zeros( size(ϵs015, 1), 1 )
+
 
 for i in 1:size(ϵs015, 1)
       global ϵs015, rep, N, freq015
@@ -334,6 +360,7 @@ for i in 1:size(ϵs015, 1)
       for j in 1:rep
             Random.seed!(j)
             n, points, edges, trigs = generateSensor(N, eps)
+            nus015[i] = nus015[i] + size(edges, 1) / ( n * (n-1) / 2 )
             if size(edges, 1) > 0
                   flag, Σ, edge2Trig, trig2Edg, Ls, Free = greedyCollapse( edges, trigs )
                   !flag && ( freq015[i] = freq015[i] + 1 )
@@ -341,22 +368,37 @@ for i in 1:size(ϵs015, 1)
       end
 end
 
+nus015 = nus015 / rep 
 freq015 = freq015 / rep
 
 
 
 
 plot()
-plot!( ϵs, freq, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 20" )
-plot!( ϵs01, freq01, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 10" )
-plot!( ϵs015, freq015, marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 15" )
-xlabel!(L"\mathrm{percolation, \;} \varepsilon")
-ylabel!(L"\mathrm{probability \; of \; 2-Core}")
-plot!(size=(600, 600), legend = :bottomright, legendfont = font(18) )
+plot!( ϵs[vec(freq .> 0)]/min_ϵ, freq[vec(freq .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 20", xscale = :log10, yscale = :log10 )
+plot!( ϵs01[vec(freq01 .> 0)]/min_ϵ01, freq01[vec(freq01 .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 10" )
+plot!( ϵs015[vec(freq015 .> 0)]/min_ϵ015, freq015[vec(freq015 .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 15" )
+xlabel!(L"\mathrm{percolation, \;} \varepsilon", xguidefontsize = 22)
+ylabel!(L"\mathrm{probability \; of \; 2-Core}", yguidefontsize = 22)
+plot!(size=(600, 600), legend = :bottomright, legendfont = font(22), tickfontsize=18 )
+xticks!([1.2, 3, 10], [L"\varepsilon_{\min}", L"3\varepsilon_{\min}", L"10\varepsilon_{\min}"])
+
 
 savefig("percol_prob.tex")
 savefig("percol_prob.pdf")
 
+
+
+
+
+plot()
+plot!( nus[vec(freq .> 0)]/nus[1], freq[vec(freq .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 20", xscale = :log10, yscale = :log10 )
+plot!( nus01[vec(freq01 .> 0)]/nus01[1], freq01[vec(freq01 .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 10" )
+plot!( nus015[vec(freq015 .> 0)]/nus015[1], freq015[vec(freq015 .> 0)], marker = :circle, label = L"\mathcal{V}_0(\mathcal K) = 15" )
+xlabel!(L"\mathrm{sparsity \; (wrt \; } \varepsilon_{\min})", xguidefontsize = 22)
+ylabel!(L"\mathrm{probability \; of \; 2-Core}", yguidefontsize = 22)
+plot!(size=(600, 600), legend = :bottomright, legendfont = font(22), tickfontsize=18 )
+#xticks!([1.2, 3, 10], [L"\varepsilon_{\min}", L"3\varepsilon_{\min}", L"10\varepsilon_{\min}"])
 
 
 
