@@ -361,7 +361,7 @@ end
 function condPlus( A; thr = 1e-8 )
       m = size(A, 1);
       #σ = svds(L1up, nsv = m - 1)[1].S;
-      σ = svd(Matrix(L1up)).S;
+      σ = svd(Matrix(A)).S;
       return maximum( σ ) / minimum( σ[ abs.(σ) .> thr ])
 end
 
@@ -406,6 +406,10 @@ C = [ sqrt(G.w_Δ[1]+G.w_Δ[2]) * Matrix(G.B2)[:, 1 ] sqrt(G.w_Δ[3]+G.w_Δ[2]) 
 preConed = pinv(C) * L1up *pinv(C');
 new = condPlus( preConed )
 
+C = Matrix(G.B2[:, 1:4 .!= 2] )
+preConed = pinv(C) * L1up *pinv(C');
+
+new = condPlus( preConed )
 
 
 
