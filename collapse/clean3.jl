@@ -398,10 +398,12 @@ function repeatTries(N, add, rep)
             #p2 = CholeskyPreconditioner( sparse(Lu), size(Lu,1) )#+ 0.01*diagm( diag( sparse(Lu))) + 1e-3*I(m), 4 )
             #D = diagm(p2.ldlt.D); L2 = p2.ldlt.L + I; p = p2.ldlt.P; D[ D.<0] .=0
             #Lu3 = pinv(L2 * sqrt.(D)) * Perm(p) * Lu * Perm(p)' * pinv(L2 * sqrt.(D))'
+            U = nullspace(Lu)
+            C2 =
 
             κ_original[ repIt ] = condPlus(Lu)
             κ_precon[ repIt ] = condPlus(Lu2)
-            #κ_ldl[ repIt ] = condPlus(Lu3; thr=1e-3)
+            κ_ldl[ repIt ] = condPlus(Lu3; thr=1e-3)
             _, it_original[ repIt ] = cgls(Lu, Lu*ones( size(Lu, 1) ))
             _, it_precon[ repIt ] = cgls(Lu2, Lu2*ones( size(Lu2, 1) ))
             #_, it_ldl[ repIt ] = cgls(Lu3, Lu3*ones( size(Lu3, 1) ))

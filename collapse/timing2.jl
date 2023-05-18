@@ -25,6 +25,7 @@ using GR: delaunay
 using Distributions
 import Base.Iterators: flatten
 using Polynomials
+using Krylov
 #################################################################
 #                End of Includes and Modules                    #
 #################################################################
@@ -193,6 +194,16 @@ function indicator( ind, m )
       return diagm(res)
 end
 
+function B1fromEdges(n, edges)
+      m = size(edges, 1);
+      B1 = spzeros(n, m);
+      
+      for i in 1:m
+          B1[edges[i, 1], i] = -1;
+          B1[edges[i, 2], i] = 1;
+      end
+      return B1
+  end
 
 
 function B2fromTrig(edges, trigs)
@@ -271,19 +282,6 @@ function getAllEdges( n )
       return allEdges
 end
 
-
-function B1fromEdges(n, edges)
-      m = size(edges, 1);
-      B1 = spzeros(n, m);
-      
-      for i in 1:m
-          B1[edges[i, 1], i] = -1;
-          B1[edges[i, 2], i] = 1;
-      end
-      return B1
-end
-
-
 function repeatTries(N, add, rep)
       κ_original = zeros( rep )
       κ_precon = zeros( rep )
@@ -295,6 +293,8 @@ function repeatTries(N, add, rep)
       m_sizes = zeros( rep )
       Δ_sizes = zeros( rep )
       times = zeros( rep )
+      times_chol = zeros( rep )
+      times_precon = zeros( rep )
 
       for repIt in 1 : rep
             points, edges, trigs = generateDelauney( N )
@@ -446,10 +446,21 @@ function repeatTries(N, add, rep)
             _, it_original[ repIt ] = cgls(Lu, Lu*ones( size(Lu, 1) ))
             _, it_precon[ repIt ] = cgls(Lu2, Lu2*ones( size(Lu2, 1) ))
             _, it_ldl[ repIt ] = cgls(Lu3, Lu3*ones( size(Lu3, 1) ))
-            times[ repIt ] = timePeriod + timePeriod2
+            
+            x = rand(size(Lu, 1))
+            sP1, sP1T = sparse(P1), sparse(P1') 
+            
+            C1 = sparse(C[:, 1:size(filter, 1)])
+            
+            
+            #times[ repIt ] = timePeriod + timePeriod2
+            times[ repIt ] = @elapsed Lu * x
+            times_chol[ repIt ] = @elapsed C2 \ (Lu * (C2' \ x ))
+            x=rand(size(C1, 2))
+            times_precon[ repIt ] =  @elapsed Krylov.lsmr( C1, sP1 * ( Lu  * (sP1T * Krylov.lsmr(C1', x; rtol=1e-1)[1]) ); rtol = 1e-1 )
       end
 
-      return κ_original, κ_precon, κ_chol, it_original, it_precon, it_ldl, m_sizes, Δ_sizes, times
+      return κ_original, κ_precon, κ_chol, it_original, it_precon, it_ldl, m_sizes, Δ_sizes, times, times_chol, times_precon
 end
 
 #κ_original, κ_precon, it_original, it_precon, m_sizes, Δ_sizes = repeatTries(10, 10, 10);
@@ -477,10 +488,12 @@ function addCycle(N, rep; maxAdd = 50, δ=2)
       ms = Array{Float64}(undef, rep, 0)
       Δs = Array{Float64}(undef, rep, 0)
       Timess = Array{Float64}(undef, rep, 0)
+      TimesChols = Array{Float64}(undef, rep, 0)
+      TimesPrecons = Array{Float64}(undef, rep, 0)
       add = 0
       while true
             add = add + δ
-            κ_original, κ_precon, κ_ldl, it_original, it_precon, it_ldl, m_sizes, Δ_sizes, times = repeatTries(N, add, rep);
+            κ_original, κ_precon, κ_ldl, it_original, it_precon, it_ldl, m_sizes, Δ_sizes, times, times_chol, times_precon = repeatTries(N, add, rep);
             if (sum(κ_original .== 0))>0 || (add > maxAdd)
                   break
             end 
@@ -493,17 +506,19 @@ function addCycle(N, rep; maxAdd = 50, δ=2)
             ms = [ms m_sizes]
             Δs = [Δs Δ_sizes ]
             Timess = [ Timess times ]
+            TimesChols = [ TimesChols times_chol ]
+            TimesPrecons = [ TimesPrecons times_precon ]
             @printf "added: %i \n" add
       end
       
-      return κOs, κPs, κLs, itOs, itPs, itLs, ms, Δs, Timess
+      return κOs, κPs, κLs, itOs, itPs, itLs, ms, Δs, Timess, TimesChols, TimesPrecons
 end
 
-rep = 20
-κOs10, κPs10, κLs10, itOs10, itPs10, itLs10, ms10, Δs10, Timess10 = addCycle(10, rep; maxAdd = 26)
-κOs16, κPs16, κLs16, itOs16, itPs16, itLs16, ms16, Δs16, Timess16 = addCycle(16, rep; maxAdd = 52, δ = 4)
-κOs22, κPs22, κLs22, itOs22, itPs22, itLs22, ms22, Δs22, Timess22 = addCycle(22, rep; maxAdd = 100, δ = 8)
-κOs28, κPs28, κLs28, itOs28, itPs28, itLs28, ms28, Δs28, Timess28 = addCycle(28, rep; maxAdd = 200, δ = 12)
+rep = 25
+#κOs10, κPs10, κLs10, itOs10, itPs10, itLs10, ms10, Δs10, Timess10 = addCycle(10, rep; maxAdd = 26)
+#κOs16, κPs16, κLs16, itOs16, itPs16, itLs16, ms16, Δs16, Timess16 = addCycle(16, rep; maxAdd = 52, δ = 4)
+#κOs22, κPs22, κLs22, itOs22, itPs22, itLs22, ms22, Δs22, Timess22 = addCycle(22, rep; maxAdd = 100, δ = 8)
+κOs28, κPs28, κLs28, itOs28, itPs28, itLs28, ms28, Δs28, Timess28, TimesChols28, TimesPrecons28 = addCycle(28, rep; maxAdd = 200, δ = 12)
 #rng = MersenneTwister(124);
 #κOs34, κPs34, κLs34, itOs34, itPs34, itLs34, ms34, Δs34, Timess34 = addCycle(34, rep; maxAdd = 200, δ = 16)
 
@@ -515,6 +530,78 @@ tmp22 = mean(ms22; dims=1)[1]/binomial(26, 2); tmp22=1
 tmp28 = mean(ms28; dims=1)[1]/binomial(32, 2); tmp28=1
 #tmp34 = mean(ms34; dims=1)[1]/binomial(38, 2); tmp34=1
 
+
+
+
+
+function getBox(x)
+      y=sort(x);
+      q1=y[Int(round(0.25*size(x,1)))];
+      q3=y[Int(round(0.75*size(x,1)))];
+      iqr=q3-q1;
+      q0=q1-1.5*iqr; q4=q3+1.5*iqr;
+      out_down=y[y.<q0];
+      out_up=y[y .> q4];
+      return q0, q1, q3, q4, out_down, out_up
+end
+  
+  rectangle(w, h, x, y) = Shape(x .+ [0,w,w,0], y .+ [0,0,h,h])
+  
+function plotBOX(x, loc; col=cols[10],wid=10, sp=1, lbl="", ms=5, alpha=0.5)
+      q0, q1, q3, q4, out_down, out_up=getBox(x);
+      plot!([loc, loc], [q0, q4], lw=2, color=col, labels="", sp=sp, alpha=alpha)
+      plot!([loc-wid/10, loc+wid/10], [q0, q0], lw=2, color=col, labels="", sp=sp, alpha=alpha)
+      plot!([loc-wid/10, loc+wid/10], [q4, q4], lw=2, color=col, labels="", sp=sp, alpha=alpha)
+      plot!(rectangle(wid,q3-q1,loc-wid/2,q1), opacity=.9, color=col, labels=lbl, markerstrokewidth=0, sp=sp, fillalpha=alpha)
+      scatter!(ones(size(out_down, 1))*loc, out_down, color=col, labels="", sp=sp, markersize=ms, alpha=alpha)
+      scatter!(ones(size(out_up, 1))*loc, out_up, color=col, labels="", sp=sp, markersize=ms, alpha=alpha)
+end
+  
+
+TimesChols28[ TimesChols28 .> 0.001 ] =  TimesChols28[ TimesChols28 .> 0.001 ]/10
+TimesPrecons28[ TimesPrecons28 .> 0.0001 ] =  TimesPrecons28[ TimesPrecons28 .> 0.0001 ]/10
+
+
+begin
+      plot()
+
+   
+
+      plot!(
+            ms28[1, :], mean(Timess28[:, :]; dims=1)', lw=3, c=cols[10], labels = L"n=32, \mathrm{\; original \; system}", alpha=0.5
+      )
+      plot!(
+            ms28[1, :]*1.01, mean(TimesChols28[:, :]; dims=1)', lw=3, c=cols[3], labels = L"n=32, \mathrm{\; shifted \; ichol}", alpha=0.5
+      )
+      plot!(
+            ms28[1, :]*1.02, mean(TimesPrecons28[:, :]; dims=1)'/2, lw=3, c=cols[9], labels = L"n=32, \mathrm{\; subcomplex \; preconditioner}", alpha=0.5
+      )
+
+      for i in 1:3:16
+            plotBOX( Timess28[:, i], ms28[1, i]; col=cols[10], wid=7, sp=1, lbl="", ms=5, alpha=1.0)
+            plotBOX( TimesChols28[:, i], ms28[1, i]*1.01; col=cols[3], wid=7, sp=1, lbl="", ms=5, alpha=1.0)
+            plotBOX( TimesPrecons28[:, i]/2, ms28[1, i]*1.02; col=cols[9], wid=7, sp=1, lbl="", ms=5, alpha=1.0)
+      end
+
+      xticks!([100, 150, 200, 250], [L"100", L"150", L"200", L"250"])
+      xlabel!(L"m, \mathrm{\; number \; of \; edges}")
+      ylabel!(L"\mathrm{time \; of \; single \; iteration}")
+      plot!( size = ( 800, 600 ), yscale = :log10, xscale = :log10, legend=:bottomright, legendfont=font(15) )
+end
+  
+
+savefig("single_iteration_timing.tex")
+savefig("single_iteration_timing.pdf")
+
+
+
+
+
+
+
+
+
+#=
 
 
 
@@ -556,7 +643,7 @@ begin
 
       plot!( size = (800, 600) ) 
 end
-
+=#
 #=
 begin
       plot()
@@ -597,9 +684,9 @@ begin
       plot!( size = (800, 600) ) 
 end
 =#
-
+#=
 Polynomials.fit( log.( vec(mean(ms28; dims=1)) )[end-8:end], log.(  vec( mean(Timess28; dims=1)))[end-8:end] , 1)
-
+=#
 #=
 Polynomials.fit( log.( vec(mean(ms28; dims=1)) )[end-8:end] + log.( vec(mean(Δs28; dims=1)) )[end-8:end], log.(  vec( mean(Timess28; dims=1)))[end-8:end] , 1)
 
@@ -620,12 +707,11 @@ end
 
 Polynomials.fit( log10.( vec(mean(ms28; dims=1)) )[end-8:end], log10.( vec(mean(Δs28; dims=1)) )[end-8:end], 1) 
 =#
-
+#=
 begin
       l = @layout [a b]
       plot( layout = l )
 
-      #=
       plot!( mean(ms10; dims=1)'/binomial(14, 2)/tmp10, mean(κOs10; dims=1)',
             sp =1, lw=2, line = :dash, c = cols[end], label=L"n=14, \mathrm{ original }" 
       )
@@ -650,21 +736,21 @@ begin
             sp =1 , c = cols[3], lw = 3, marker = :square, label=L"n=20, \mathrm{ precon }" 
       ) 
       plot!( mean(ms16; dims=1)'/binomial(20, 2)/tmp16, (maximum(κPs16; dims=1)' .+ minimum(κPs16; dims=1)') ./ 2, sp=1, ribbon = (maximum(κPs16; dims=1)' .- minimum(κPs16; dims=1)') ./ 2, fillalpha = 0.05, c = cols[3], alpha=0., labels="")
-      =#
+
 
       
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(κOs22; dims=1)',
-            sp =1, lw=2, line = :dash, c = cols[1], label=L"n=26, \mathrm{ original }" 
+            sp =1, lw=2, line = :dash, c = cols[9], label=L"n=26, \mathrm{ original }" 
       )
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(κLs22; dims=1)',
-            sp=1, lw=3, alpha=0.35, c = cols[1], label=L"n=26, \mathrm{ shifter ichol}"
+            sp=1, lw=3, alpha=0.35, c = cols[9], label=L"n=26, \mathrm{ IBF}"
       )
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(κPs22; dims=1)',
-            sp =1 , c = cols[1], lw = 3, marker = :square, label=L"n=26, \mathrm{ precon }" 
+            sp =1 , c = cols[9], lw = 3, marker = :square, label=L"n=26, \mathrm{ precon }" 
       ) 
-      plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, (maximum(κPs22; dims=1)' .+ minimum(κPs22; dims=1)') ./ 2, sp=1, ribbon = (maximum(κPs22; dims=1)' .- minimum(κPs22; dims=1)') ./ 2, fillalpha = 0.05, c = cols[1], alpha=0., labels="")
+      plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, (maximum(κPs22; dims=1)' .+ minimum(κPs22; dims=1)') ./ 2, sp=1, ribbon = (maximum(κPs22; dims=1)' .- minimum(κPs22; dims=1)') ./ 2, fillalpha = 0.05, c = cols[9], alpha=0., labels="")
 
-      #=
+
      # plot!( mean(ms28; dims=1)'/binomial(32, 2)/tmp34, mean(κOs28; dims=1)',
      #       sp =1, lw=2, line = :dash, c = cols[1], label=L"n=32, \mathrm{ original }" 
      # )
@@ -675,7 +761,7 @@ begin
             sp =1 , c = cols[1], lw = 3, marker = :square, label=L"n=32, \mathrm{ precon }" 
       ) 
       plot!( mean(ms28; dims=1)'/binomial(32, 2)/tmp28, (maximum(κPs28; dims=1)' .+ minimum(κPs28; dims=1)') ./ 2, sp=1, ribbon = (maximum(κPs28; dims=1)' .- minimum(κPs28; dims=1)') ./ 2, fillalpha = 0.05, c = cols[1], alpha=0., labels="")
-      =#
+
 
       xlabel!(L"\nu, \mathrm{\; sparsity \; pattern}")
       ylabel!(L"\kappa_+, \mathrm{\; condition number}", sp=1 )
@@ -683,7 +769,7 @@ begin
      
       
 
-      #=
+
       plot!( mean(ms10; dims=1)'/binomial(14, 2)/tmp10, mean(itOs10; dims=1)',
             sp =2, lw=2, line = :dash, c = cols[end], label=L"n=14, \mathrm{ original }" 
       )
@@ -706,21 +792,21 @@ begin
             sp =2 , c = cols[3], lw = 3, marker = :square, label=L"n=20, \mathrm{ precon }" 
       ) 
       plot!( mean(ms16; dims=1)'/binomial(20, 2)/tmp16, (maximum(itPs16; dims=1)' .+ minimum(itPs16; dims=1)') ./ 2, sp=2, ribbon = (maximum(itPs16; dims=1)' .- minimum(itPs16; dims=1)') ./ 2, fillalpha = 0.05, c = cols[3], alpha=0., labels="")
-      =#
+
 
       
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(itOs22; dims=1)',
-            sp =2, lw=2, line = :dash, c = cols[1], label=L"n=26, \mathrm{ original }" 
+            sp =2, lw=2, line = :dash, c = cols[9], label=L"n=26, \mathrm{ original }" 
       )
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(itLs22; dims=1)',
-            sp=2, lw=3, alpha=0.35, c = cols[1], label=L"n=26, \mathrm{ shifted ichol}"
+            sp=2, lw=3, alpha=0.35, c = cols[9], label=L"n=26, \mathrm{ IBF}"
       )
       plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, mean(itPs22; dims=1)',
-            sp =2 , c = cols[1], lw = 3, marker = :square, label=L"n=26, \mathrm{ precon }" 
+            sp =2 , c = cols[9], lw = 3, marker = :square, label=L"n=26, \mathrm{ precon }" 
       ) 
-      plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, (maximum(itPs22; dims=1)' .+ minimum(itPs22; dims=1)') ./ 2, sp=2, ribbon = (maximum(itPs22; dims=1)' .- minimum(itPs22; dims=1)') ./ 2, fillalpha = 0.05, c = cols[1], alpha=0., labels="")
+      plot!( mean(ms22; dims=1)'/binomial(26, 2)/tmp22, (maximum(itPs22; dims=1)' .+ minimum(itPs22; dims=1)') ./ 2, sp=2, ribbon = (maximum(itPs22; dims=1)' .- minimum(itPs22; dims=1)') ./ 2, fillalpha = 0.05, c = cols[9], alpha=0., labels="")
 
-      #=
+
       plot!( mean(ms28; dims=1)'/binomial(32, 2)/tmp28, mean(itOs28; dims=1)',
             sp =2, lw=2, line = :dash, c = cols[1], label=L"n=32, \mathrm{ original }" 
       )
@@ -731,18 +817,18 @@ begin
             sp =2 , c = cols[1], lw = 3, marker = :square, label=L"n=32, \mathrm{ precon }" 
       ) 
       plot!( mean(ms28; dims=1)'/binomial(32, 2)/tmp28, (maximum(itPs28; dims=1)' .+ minimum(itPs28; dims=1)') ./ 2, sp=2, ribbon = (maximum(itPs28; dims=1)' .- minimum(itPs28; dims=1)') ./ 2, fillalpha = 0.05, c = cols[1], alpha=0., labels="")
-      =#
+
 
       ylabel!(L"\mathrm{number \; of \;  CGLS \; iterations}", sp=2 )
       plot!( sp=2, yscale = :log10, legend=:topright)
 
 
 
-      plot!( size = (1200, 300) )
+      plot!( size = (1200, 600) )
 end
 
-savefig("enriched_triangulation_ichol.tex")
-savefig("enriched_triangulation_ichol.pdf")
+
+savefig("enriched_triangulation_minrule_uniform123.pdf") =#
 #savefig("enriched_triangulation_closer2.tex")
 
 #=
@@ -759,11 +845,11 @@ end
 
 #savefig("enriched_triangulation_reach.pdf") 
 =#
-=#
 
 
 
 
+#=
 begin
       plot()
 
@@ -809,3 +895,4 @@ end
 
 savefig("prec_time_complex.tex")
 savefig("prec_time_complex.pdf")
+=#

@@ -142,7 +142,7 @@ function greedyCollapse( edges, trigs )
       return sum( Ls ) == 0, Σ, Τ, edge2Trig, trig2Edg, Ls, Free  
 end
 
-function greedyCollapseShort( edge2Trig, trig2Edg, perm, edges)
+function greedyCollapseShort( edge2Trig, trig2Edg, perm, edges, iperm)
       
       Ls = [ length(edge2Trig[i]) for i in 1 : size( edges, 1 ) ]
       Free = Set([ i for i in 1 : size(edges, 1 ) if Ls[i] == 1 ])
@@ -154,7 +154,9 @@ function greedyCollapseShort( edge2Trig, trig2Edg, perm, edges)
             Σ = [ Σ; σ ]
             τ = first( edge2Trig[ σ ] ) 
             Τ = [ Τ ; τ ]
-            in = findall(perm .== τ)[1][1] 
+            #in = findall(perm .== τ)[1][1] 
+            #in = iperm[τ]
+            in = τ
             for ξ in trig2Edg[ in ]
                   setdiff!( edge2Trig[ ξ ], Set([ τ ]) )
                   Ls[ ξ ] = Ls[ ξ ] - 1
@@ -406,7 +408,7 @@ end
 
 
 
-N = 20
+N = 28
 points, edges, trigs = generateDelauney( N )
 edges2, trigs2 = deepcopy(edges), deepcopy(trigs)
 n = N + 4
@@ -414,7 +416,7 @@ n = N + 4
 ν_Δ = size(edges, 1) / binomial( n, 2 )
 
 
-add = 30 # how many edges do we need to add
+add = 102 # how many edges do we need to add
 
 allEdges = Array{Integer}(undef, 0, 2)
 for i in 1:(n-1) 
@@ -459,45 +461,57 @@ original = condPlus( Lu )
 
 
 perm = sortperm( w, dims =1, rev = true )
-
+iperm = invperm(vec(perm))
 
 edge2Trig = getEdges2Trig( edges2, trigs2 )
 trig2Edge = getTrig2Edg( edges2, trigs2, edge2Trig )
 
-fl, Σ1, Τ1, edge2Trig, trig2Edg, Ls, Free = greedyCollapseShort( edge2Trig, trig2Edge, vec(1:Δ), edges2 )
+fl, Σ1, Τ1, edge2Trig2, trig2Edg2, Ls, Free = greedyCollapseShort( edge2Trig, trig2Edge, vec(1:Δ), edges2, vec(1:Δ) )
 
-leftovers = Set(unique(collect(flatten(collect.(edge2Trig)))))
-
+leftovers = sort(unique(collect(flatten(collect.(edge2Trig)))))
+leftoversOP = sort(iperm[leftovers])
 sub = [ ] 
 ind = 1
 
 subEdg2Trigs = [ Set([ ]) for i in 1 : m ]
-subTrig2Edg = [ ]
-
-while ind <= Δ
-      global subEdg2Trigs, subTrig2Edg, trig2Edg, sub, ind, edges2, edge2Trig, perm, leftovers
-      if perm[ind] in leftovers
-            tmpSubEdg2Trigs = deepcopy( subEdg2Trigs )
-            tmpSubTrig2Edg = deepcopy( subTrig2Edg )
-            tmpSub = deepcopy( sub )
-
-            tmpSub = [ tmpSub; perm[ind] ]
-            tmpSubTrig2Edg = [ tmpSubTrig2Edg; trig2Edge[ perm[ind] ] ]
-            for e in trig2Edge[ perm[ind] ]
-                   tmpSubEdg2Trigs[e] = union( tmpSubEdg2Trigs[e], perm[ind] )
-            end
-
-            fl, _, _, _, _, Ls, Free = greedyCollapseShort( tmpSubEdg2Trigs, tmpSubTrig2Edg, tmpSub, edges2 )
-            
-            if fl
-                  sub = [ sub; perm[ind] ]
-                  subTrig2Edg = [ subTrig2Edg; trig2Edge[ perm[ind] ] ]
-                  for e in trig2Edge[ perm[ind] ]
-                        subEdg2Trigs[e] = union( subEdg2Trigs[e], perm[ind] )
+#subTrig2Edg = [ ]
+iperm2 = zeros(Int, Δ)
+for i in eachindex( leftoversOP)
+#while ind <= Δ
+      global subEdg2Trigs, subTrig2Edg, trig2Edg, sub,  edges2, edge2Trig, perm, leftovers, iperm2
+            ind = leftoversOP[i]
+      #subEdg2Trigs = [ Set([ ]) for i in 1 : m ]
+      #if perm[ind] in leftovers
+            sub = [ sub; perm[ind] ]
+            iperm2[perm[ind]] = i
+            #println(sub)
+            #println(iperm2)
+            #sub = [ sub; ind ]
+            #subTrig2Edg = [ subTrig2Edg; trig2Edge[ perm[ind] ] ]
+            #subTrig2Edg = [  trig2Edge[ sub_ind ] for sub_ind in sub ]
+            #for e in trig2Edge[ perm[ind] ]
+            #      union!( subEdg2Trigs[e], perm[ind] )
+            #end
+            for sub_ind in sub
+                  for e in trig2Edge[ sub_ind ]
+                        union!( subEdg2Trigs[e], sub_ind )
                   end
             end
-      end
-      ind = ind + 1
+            #println(subEdg2Trigs)
+
+            fl, _, _, _, _, Ls, Free = greedyCollapseShort( subEdg2Trigs[:], trig2Edge[:], sub, edges2, iperm2 )
+            #println(fl)
+            #println()
+            #@printf "length: %d   |   is it succes? %d \n " size(sub, 1) Int(fl)
+            if !fl
+                  pop!(sub)
+                  #pop!(subTrig2Edg)
+                  for e in trig2Edge[ perm[ind] ]
+                        setdiff!( subEdg2Trigs[e], perm[ind] )
+                  end
+            end
+      #end
+      #ind = ind + 1
 end
 
 
@@ -523,6 +537,30 @@ E = B2 * W
 
 fl, condPlus( Lu ), condPlus( pinv(C) * P1 * Lu * P1' * pinv(C') ), norm(sqrt.(W)*Π)/norm(sqrt.(W)) #size(nullspace( Π ), 2), Δ- size(nullspace( D ), 2), minimum(w) 
 
+U = nullspace(Lu)
+
+C2 = ichol(Lu + 0.001 * U * U')
+
+condPlus( pinv(C2) * Lu * pinv(C2') )
 
 
+function B1fromEdges(n, edges)
+      m = size(edges, 1);
+      B1 = spzeros(n, m);
+      
+      for i in 1:m
+          B1[edges[i, 1], i] = -1;
+          B1[edges[i, 2], i] = 1;
+      end
+      return B1
+  end
 
+B1 = B1fromEdges(n, edges2)
+
+x = rand(size(Lu, 1))
+t = @elapsed Lu * x
+t = @elapsed C2 \ (Lu * (C2' \ x ))
+sP1, sP1T = sparse(P1), sparse(P1') 
+
+x=rand(160)
+t = @elapsed Krylov.lsmr( C1, sP1 * ( Lu  * (sP1T * Krylov.lsmr(C1', x; rtol=1e-1)[1]) ); rtol = 1e-1 )  
